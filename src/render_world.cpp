@@ -25,8 +25,11 @@ Render_World::~Render_World()
 Object* Render_World::Closest_Intersection(const Ray& ray, Hit& hit)
 {
     // TODO // IN PROGRESS
-    Object* closest_object = NULL;
-    double min_t = std::numeric_limits<double>::infinity(); // Set min_t to a large value
+    Object* closest_object = nullptr;
+
+    //double min_t = std::numeric_limits<double>::infinity(); // Set min_t to a large value
+    hit.t = std::numeric_limits<double>::infinity(); // Set t to a large value
+
     // For each object in objects
     for (unsigned int objects_index = 0; objects_index < objects.size(); objects_index++) {
 
@@ -34,15 +37,16 @@ Object* Render_World::Closest_Intersection(const Ray& ray, Hit& hit)
 
       // use object.intersect to fill the hits
       objects.at(objects_index)->Intersection(ray, list_of_hits);
-
+       //std::cout << "list_of_hits.size " << list_of_hits.size() <<  '\n';
       // For eacht h in list of hits
       for (unsigned int hit_index = 0; hit_index < list_of_hits.size(); hit_index++) {
         // if h is closest so far ( with smallest t, that is larger than small_t)
-        if (list_of_hits.at(hit_index).t < min_t && list_of_hits.at(hit_index).t < small_t) {
+        std::cout << "ANyting" << '\n';
+        if (list_of_hits.at(hit_index).t < hit.t && list_of_hits.at(hit_index).t > small_t) {
 
           closest_object = objects.at(objects_index); // Set the object as the closest_object
           hit = list_of_hits.at(hit_index);                         // Set hit to h
-          min_t = list_of_hits.at(hit_index).t;                 // Update min_t
+          std::cout << "hit.t" << hit.t << '\n';
 
         }
 
@@ -61,8 +65,9 @@ void Render_World::Render_Pixel(const ivec2& pixel_index)
     // Notes from Lab 9
     // end_point: camera poisition (from camera class)
     // direction: a unit vector from the camera position to the world position of the pixel.
-    ray.endpoint = camera.position;                                                           // camera poisition (from camera class
+    ray.endpoint = camera.position;     // camera poisition (from camera class
     ray.direction = (camera.World_Position(pixel_index) - camera.position).normalized();      // vector that has been normalized
+
     vec3 color=Cast_Ray(ray,1);
     camera.Set_Pixel(pixel_index,Pixel_Color(color));
 }
@@ -80,17 +85,20 @@ vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 {
     // TODO
     vec3 color;
-
-    vec3 dummy;           // dummy variable for now
     Hit hit;
+    vec3 dummy;           // dummy variable for now
     Object *obj = Closest_Intersection(ray, hit);
 
     // determine the color here
-    if (obj != NULL) {
-      color=obj->material_shader->Shade_Surface(ray,dummy,dummy,1);
-    } else {
-      color=background_shader->Shade_Surface(ray, dummy, dummy, 1);
+    if (obj != nullptr) {
+      std::vector<Hit> hits;
+      hit.object->Intersection(ray, hits);
+      //vec3 normal = hit.object->Normal(ray.Point(hit.t));
 
+      //color=obj->material_shader->Shade_Surface(ray,ray.Point(hit.t), normal, recursion_depth);
+      color=obj->material_shader->Shade_Surface(ray,ray.Point(hit.t), dummy, recursion_depth);
+    } else {
+      color=background_shader->Shade_Surface(ray, ray.endpoint, ray.endpoint, 1);
     }
 
     return color;
