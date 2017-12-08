@@ -5,7 +5,7 @@
 // Determine if the ray intersects with the sphere
 bool Sphere::Intersection(const Ray& ray, std::vector<Hit>& hits) const
 {
-    // TODO // IN PROGRESS
+    // TODO // Complete
     double discriminant;
     vec3 w = ray.direction;
     vec3 u = ray.endpoint;
@@ -23,10 +23,10 @@ bool Sphere::Intersection(const Ray& ray, std::vector<Hit>& hits) const
     //std::cout << "discriminant " << discriminant<< '\n';
 
     if (discriminant >= 0){
-      std::cout << "discriminant " << discriminant<< '\n';
-      std::cout << "Greate than 0" << '\n';
+      // std::cout << "discriminant " << discriminant<< '\n';
+      // std::cout << "Greate than 0" << '\n';
       hit.t = (-1.0*dot(w,v) + pow(discriminant, .5))/dot(w,w);
-      //std::cout<< hit.t;
+      // std::cout<< hit.t;
       hit.object = this;
 
       if(hit.t >= 0) {
@@ -47,5 +47,10 @@ vec3 Sphere::Normal(const vec3& point) const
 {
     vec3 normal;
     // TODO: set the normal
+    // The normal of a sphere is the vector from the center of the sphere to the point
+    normal = center - point;
+
+    normal/=radius; // normalize the normal.
+
     return normal;
 }

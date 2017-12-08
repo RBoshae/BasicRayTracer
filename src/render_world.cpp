@@ -41,12 +41,12 @@ Object* Render_World::Closest_Intersection(const Ray& ray, Hit& hit)
       // For eacht h in list of hits
       for (unsigned int hit_index = 0; hit_index < list_of_hits.size(); hit_index++) {
         // if h is closest so far ( with smallest t, that is larger than small_t)
-        std::cout << "ANyting" << '\n';
+        //std::cout << "ANyting" << '\n';
         if (list_of_hits.at(hit_index).t < hit.t && list_of_hits.at(hit_index).t > small_t) {
 
           closest_object = objects.at(objects_index); // Set the object as the closest_object
           hit = list_of_hits.at(hit_index);                         // Set hit to h
-          std::cout << "hit.t" << hit.t << '\n';
+          //std::cout << "hit.t" << hit.t << '\n';
 
         }
 
