@@ -1,0 +1,4 @@
+#ignore .o files
+*.o
+*.d
+*.png
