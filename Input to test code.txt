@@ -1,0 +1,1 @@
+./ray_tracer -i tests/02.txt -s tests/02.png

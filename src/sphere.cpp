@@ -28,6 +28,7 @@ bool Sphere::Intersection(const Ray& ray, std::vector<Hit>& hits) const
       hit.t = (-1.0*dot(w,v) + pow(discriminant, .5))/dot(w,w);
       // std::cout<< hit.t;
       hit.object = this;
+      hit.ray_exiting=false;
 
       if(hit.t >= 0) {
         hits.push_back(hit);
@@ -35,6 +36,8 @@ bool Sphere::Intersection(const Ray& ray, std::vector<Hit>& hits) const
       }
 
       hit.t = (-1.0*dot(w,v) - pow(discriminant, .5))/ dot(w,w);
+      hit.ray_exiting=true;
+
       if(hit.t >= 0) {
         hits.push_back(hit);
       }
@@ -50,7 +53,7 @@ vec3 Sphere::Normal(const vec3& point) const
     // The normal of a sphere is the vector from the center of the sphere to the point
     normal = center - point;
 
-    normal/=radius; // normalize the normal.
+    normal =normal.normalized(); // normalize the normal.
 
     return normal;
 }

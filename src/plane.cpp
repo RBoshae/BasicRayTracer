@@ -20,8 +20,11 @@ Intersection(const Ray& ray, std::vector<Hit>& hits) const
 
       if((hit.t = -dot(normal,(ray.endpoint - x1))/(denominator)) >=0) {
         hit.object = this;
-        hits.push_back(hit);
-        return true;
+        if(hit.t >= 0) {
+          hit.ray_exiting = false;
+          hits.push_back(hit);
+          return true;
+        }
       } else if(-dot(normal,(ray.endpoint-x1)) != 0) {
         // infinite hits
         //std::cout << "Unhandled case in plane.cpp\n";
@@ -37,6 +40,7 @@ Intersection(const Ray& ray, std::vector<Hit>& hits) const
 vec3 Plane::
 Normal(const vec3& point) const
 {
+
     return normal;
 }
 
