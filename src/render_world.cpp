@@ -27,7 +27,6 @@ Object* Render_World::Closest_Intersection(const Ray& ray, Hit& hit)
     // TODO // IN PROGRESS
     Object* closest_object = nullptr;
 
-    //double min_t = std::numeric_limits<double>::infinity(); // Set min_t to a large value
     hit.t = std::numeric_limits<double>::infinity(); // Set t to a large value
 
     // For each object in objects
@@ -37,16 +36,14 @@ Object* Render_World::Closest_Intersection(const Ray& ray, Hit& hit)
 
       // use object.intersect to fill the hits
       objects.at(objects_index)->Intersection(ray, list_of_hits);
-       //std::cout << "list_of_hits.size " << list_of_hits.size() <<  '\n';
+
       // For eacht h in list of hits
       for (unsigned int hit_index = 0; hit_index < list_of_hits.size(); hit_index++) {
         // if h is closest so far ( with smallest t, that is larger than small_t)
-        //std::cout << "ANyting" << '\n';
         if (list_of_hits.at(hit_index).t < hit.t && list_of_hits.at(hit_index).t > small_t) {
 
           closest_object = objects.at(objects_index); // Set the object as the closest_object
           hit = list_of_hits.at(hit_index);                         // Set hit to h
-          //std::cout << "hit.t" << hit.t << '\n';
 
         }
 
@@ -83,14 +80,15 @@ void Render_World::Render()
 // or the background color if there is no object intersection
 vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 {
-    // TODO
+    // TODO  // Complete
     vec3 color;
     Hit hit;
-    //vec3 dummy;           // dummy variable for now
+
     Object *obj = Closest_Intersection(ray, hit);
 
     // determine the color here
     if (obj != nullptr) {
+      
       std::vector<Hit> hits;
       hit.object->Intersection(ray, hits);
       vec3 normal = hit.object->Normal(ray.Point(hit.t));

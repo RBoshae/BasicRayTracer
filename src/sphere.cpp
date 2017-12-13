@@ -5,45 +5,53 @@
 // Determine if the ray intersects with the sphere
 bool Sphere::Intersection(const Ray& ray, std::vector<Hit>& hits) const
 {
-    // TODO // Complete
-    double discriminant;
-    vec3 w = ray.direction;
-    vec3 u = ray.endpoint;
-    vec3 v = u - this->center;
+  // TODO // Complete
+  double discriminant;
+  vec3 w = ray.direction;
+  vec3 u = ray.endpoint;
+  vec3 v = u - this->center;
 
-    // std::cout << "pow(dot(w,v),2) " << pow(dot(w,v),2) << '\n';
-    // std::cout << "(dot(w,w)*(dot(v,v) " << dot(w,w)*dot(v,v) << '\n';
-    // std::cout << "pow(radius,2) " << pow(radius,2) << '\n';
+  // Compute discriminant
+  discriminant = pow(dot(w,v),2) - (dot(w,w)*(dot(v,v) - radius*radius));
+  //  discriminant = pow(dot(w,v),2) - (dot(w,w)*(dot(v,v) - pow(this->radius,2)));
+  //  discriminant = pow(dot(ray.direction , ray.endpoint),2) - (dot(w,w)*(dot(v,v) - pow(this->radius,2)));
 
-    // Compute discriminant
-    discriminant = pow(dot(w,v),2) - (dot(w,w)*(dot(v,v) - radius*radius));
-    //discriminant = pow(dot(w,v),2) - (dot(w,w)*(dot(v,v) - pow(this->radius,2)));
-    //discriminant = pow(dot(ray.direction , ray.endpoint),2) - (dot(w,w)*(dot(v,v) - pow(this->radius,2)));
-    Hit hit;
-    //std::cout << "discriminant " << discriminant<< '\n';
+  // Set up both hits
+  Hit enter_hit;
+  Hit exit_hit;
 
-    if (discriminant >= 0){
-      // std::cout << "discriminant " << discriminant<< '\n';
-      // std::cout << "Greate than 0" << '\n';
-      hit.t = (-1.0*dot(w,v) + pow(discriminant, .5))/dot(w,w);
-      // std::cout<< hit.t;
-      hit.object = this;
-      hit.ray_exiting=false;
+  if (discriminant < 0) {
 
-      if(hit.t >= 0) {
-        hits.push_back(hit);
-
-      }
-
-      hit.t = (-1.0*dot(w,v) - pow(discriminant, .5))/ dot(w,w);
-      hit.ray_exiting=true;
-
-      if(hit.t >= 0) {
-        hits.push_back(hit);
-      }
-      return true;
-    }
     return false;
+
+  } else if (discriminant > 0) {
+
+    enter_hit.t = (-1.0*dot(w,v) + pow(discriminant, .5))/dot(w,w);
+    exit_hit.t  = (-1.0*dot(w,v) - pow(discriminant, .5))/ dot(w,w);
+
+    enter_hit.object = this;
+    enter_hit.ray_exiting = false;
+    hits.push_back(enter_hit);
+
+    exit_hit.object = this;
+    exit_hit.ray_exiting = true;
+    hits.push_back(exit_hit);
+
+    return true;
+
+  } else {
+
+    enter_hit.t = (-1.0*dot(w,v) + pow(discriminant, .5))/dot(w,w);
+
+    enter_hit.object = this;
+    enter_hit.ray_exiting = false;
+    hits.push_back(enter_hit);
+
+    return true;
+
+  }
+
+  return false;
 }
 
 vec3 Sphere::Normal(const vec3& point) const

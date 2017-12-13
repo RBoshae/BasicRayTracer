@@ -11,41 +11,90 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
 {
     vec3 color;
 
-    vec3 tmpd = vec3(0,0,0);                 // Used for diffuse color
+    vec3 diffuse_component = vec3(0,0,0);   // Used for diffuse color
+    vec3 specular_component = vec3(0,0,0);   // Used for diffuse color
     vec3 light_color = vec3(0,0,0);
     vec3 L = vec3(0,0,0);
+    vec3 reflectance_vector = vec3(0,0,0);
+    vec3 C = vec3(0,0,0);
 
-    // TODO: determine the color
-    // std::cout << "world.lights" << world.lights[1]<< '\n';
+    // TODO: Shadows in Progress
+    if(world.enable_shadows) {
+      for (unsigned int i = 0; i < world.lights.size(); i++){
 
-    // Redundant normalization
-    //same_side_normal = same_side_normal/pow(dot(same_side_normal,same_side_normal),.5);
+        // Contruct a ray from object to light
+        Ray ray_from_object_to_light_source;
+        ray_from_object_to_light_source.direction = (world.lights.at(i)->position - intersection_point).normalized();
+        ray_from_object_to_light_source.endpoint = intersection_point + small_t*ray_from_object_to_light_source.direction;
 
-    //light color is the (color of the light)/(distance to the light)2
 
-    for (unsigned int i = 0; i < world.lights.size(); i++){
 
-      // vec3 light_color = world.lights.at(i)->color/(pow(dot(world.lights.at(i)->position - intersection_point, intersection_point),2));
+        Hit intercepting_object_hit;
 
-      light_color = world.lights.at(i)->Emitted_Light(ray)/(world.lights.at(i)->position - intersection_point).magnitude_squared();
+        Object* intercepting_object = world.Closest_Intersection(ray_from_object_to_light_source, intercepting_object_hit);
 
-      // std::cout << "light color " << light_color << '\n';
+        double distance_between_object_and_light = (world.lights.at(i)->position - intersection_point ).magnitude();
 
-      L = (world.lights.at(i)->position - intersection_point).normalized();
+        //double distance_between_object_and_hit = ray_from_object_to_light_source.Point(intercepting_object_hit.t).magnitude();
 
-      // std::cout << "L " << L << '\n';
-      // std::cout << "same_side_normal " << same_side_normal << '\n';
-      // std::cout << "same_side_normal.normalized() " << same_side_normal.normalized() << '\n';
+        double distance_between_object_and_hit = intercepting_object_hit.t;
 
-      tmpd += std::max( 0.0, dot( same_side_normal.normalized(), L )) * color_diffuse * light_color;
 
-        // std::cout << "dot( same_side_normal.normalized(), L ) " << dot( same_side_normal.normalized(), L ) << std::endl << std::endl;
-      // std::cout << "tmpd " << tmpd << std::endl << std::endl;
+        // if there is no interefering object between the starting object and the light source
+        if (intercepting_object == nullptr || distance_between_object_and_light <= distance_between_object_and_hit /*(distance_between_object_and_light < ray_from_object_to_light_source.Point(intercepting_object_hit.t +small_t).magnitude()*/){
+          //std::cout << small_t << "\n";
+
+          // std::cout << "distance_from_light = " <<  distance_from_light << '\n';
+          // std::cout << "intercepting_object.t = " <<  intercepting_object_hit.t << '\n';
+          // std::cout << "intercepting_object_hit.t *(intercepting_object_hit.t *ray_from_object_to_light_source.direction).magnitude() = " <<  (intercepting_object_hit.t *ray_from_object_to_light_source.direction).magnitude() << '\n';
+
+          //std::cout << "ray_from_object_to_light_source.Point(intercepting_object_hit.t) = " << ray_from_object_to_light_source.Point(intercepting_object_hit.t) << '\n';
+
+          light_color = world.lights.at(i)->Emitted_Light(ray)/(world.lights.at(i)->position - intersection_point).magnitude_squared();
+
+          L = (world.lights.at(i)->position - intersection_point).normalized();
+
+          diffuse_component += std::max( 0.0, dot( same_side_normal.normalized(), L )) * color_diffuse * light_color;
+
+          // calculating the reflectance value;
+          reflectance_vector = (((dot(L,same_side_normal.normalized()) * same_side_normal * 2)-L));
+          //reflectance_vector = L - (L-dot(L,same_side_normal)*same_side_normal.normalized())*2;
+          reflectance_vector= reflectance_vector.normalized();
+
+          // calculating the camera vector
+          C = (ray.endpoint - intersection_point).normalized();
+          // dot(r,v)
+
+          specular_component += pow(std::max( 0.0, dot( C, reflectance_vector )), specular_power)  * light_color * color_specular;
+
+        }
+      }
+      color = world.ambient_color*world.ambient_intensity*color_ambient + diffuse_component + specular_component;
+
+      return color;
+    } else { // shadows not enabled
+      for (unsigned int i = 0; i < world.lights.size(); i++){
+
+        light_color = world.lights.at(i)->Emitted_Light(ray)/(world.lights.at(i)->position - intersection_point).magnitude_squared();
+
+        L = (world.lights.at(i)->position - intersection_point).normalized();
+
+        diffuse_component += std::max( 0.0, dot( same_side_normal.normalized(), L )) * color_diffuse * light_color;
+
+        // calculating the reflectance value;
+        reflectance_vector = (((dot(L,same_side_normal.normalized()) * same_side_normal * 2)-L));
+        //reflectance_vector = L - (L-dot(L,same_side_normal)*same_side_normal.normalized())*2;
+        reflectance_vector= reflectance_vector.normalized();
+
+        // calculating the camera vector
+        C = (ray.endpoint - intersection_point).normalized();
+        // dot(r,v)
+
+        specular_component += pow(std::max( 0.0, dot( C, reflectance_vector )), specular_power)  * light_color * color_specular;
+
+      }
+      color = world.ambient_color*world.ambient_intensity*color_ambient + diffuse_component + specular_component;
+
+      return color;
     }
-
-    //max(dot(L,N),0)∗color_diffuse∗light_color
-
-    color = world.ambient_color*world.ambient_intensity*color_ambient + tmpd;
-
-    return color;
 }
